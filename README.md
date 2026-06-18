@@ -1,58 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Customer Feedback Tracker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A simple customer feedback tracker built with Laravel. Customers submit feedback through an
+AJAX form, and submissions appear on a dashboard where each entry can be marked as reviewed —
+all without page reloads.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Feedback submission form (name, email, feedback) with server-side validation
+  (all fields required, valid email, feedback at least 20 characters).
+- jQuery AJAX submission: no page refresh, inline validation errors, success message,
+  and the submit button is disabled while the request is in flight.
+- Dashboard listing every submission with name, email, and status.
+- "Mark Reviewed" button that updates a row's status from `Pending` to `Reviewed`
+  via AJAX and persists the change.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.3+
+- Composer
+- SQLite (default; the database file lives at `database/database.sqlite`)
+- Node.js & npm (only needed to build front-end assets / run the welcome page; the feedback
+  pages load jQuery from a CDN and work without a build step)
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
+# 1. Install PHP dependencies
+composer install
 
-php artisan boost:install
+# 2. Create your environment file
+cp .env.example .env
+
+# 3. Generate the application key
+php artisan key:generate
+
+# 4. Create the SQLite database file
+touch database/database.sqlite
+
+# 5. Run migrations and seed sample feedback
+php artisan migrate --seed
+
+# 6. (Optional) Install and build front-end assets
+npm install
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Running the app
 
-## Contributing
+Using PHP's built-in server:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+php artisan serve
+```
 
-## Code of Conduct
+Then open http://127.0.0.1:8000 — the home page redirects to the feedback dashboard
+at `/feedbacks`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+If you use [Laravel Herd](https://herd.laravel.com/), the app is served automatically at
+your project's `.test` domain (for example `https://betternship.test/feedbacks`).
 
-## Security Vulnerabilities
+## Routes
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Method | URI                           | Description                       |
+| ------ | ----------------------------- | --------------------------------- |
+| GET    | `/`                           | Redirects to the dashboard        |
+| GET    | `/feedbacks`                  | Dashboard + submission form       |
+| POST   | `/feedback`                   | Store new feedback (AJAX)         |
+| PATCH  | `/feedback/{feedback}/status` | Mark feedback as reviewed (AJAX)  |
 
-## License
+## Testing
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan test
+```
+
+The feature tests cover the dashboard, validation, storing feedback, and the
+"mark reviewed" flow. They run against an in-memory SQLite database, so they do not
+touch your development data.

@@ -1,7 +1,5 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
-
-    $response->assertStatus(200);
+test('the application redirects the home page to the feedback dashboard', function () {
+    $this->get('/')->assertRedirect(route('feedback.index'));
 });
