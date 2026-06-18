@@ -121,10 +121,15 @@
             $('#feedbackForm').on('submit', function (e) {
                 e.preventDefault();
 
-                const $btn = $('#submitBtn');
-                $btn.prop('disabled', true).text('Submitting...');
                 $('.error').hide().text('');
                 $('#successAlert').hide();
+
+                if (!validateForm()) {
+                    return;
+                }
+
+                const $btn = $('#submitBtn');
+                $btn.prop('disabled', true).text('Submitting...');
 
                 $.ajax({
                     url: '{{ route('feedback.store') }}',
@@ -172,6 +177,41 @@
                     }
                 });
             });
+
+            function validateForm() {
+                let valid = true;
+                const name = $('#customer_name').val().trim();
+                const email = $('#email').val().trim();
+                const feedback = $('#feedback').val().trim();
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (name === '') {
+                    showError('customer_name', 'The customer name field is required.');
+                    valid = false;
+                }
+
+                if (email === '') {
+                    showError('email', 'The email field is required.');
+                    valid = false;
+                } else if (!emailPattern.test(email)) {
+                    showError('email', 'Please enter a valid email address.');
+                    valid = false;
+                }
+
+                if (feedback === '') {
+                    showError('feedback', 'The feedback field is required.');
+                    valid = false;
+                } else if (feedback.length < 20) {
+                    showError('feedback', 'The feedback must be at least 20 characters.');
+                    valid = false;
+                }
+
+                return valid;
+            }
+
+            function showError(field, message) {
+                $('[data-error="' + field + '"]').text(message).show();
+            }
 
             function addRow(fb) {
                 $('#emptyRow').remove();
